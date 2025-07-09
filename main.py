@@ -45,11 +45,11 @@ def main(dataset_path):
     print("Baseline logistic regression model trained successfully.")
 
     # Evaluate the baseline model
-    evaluate_model(lr_model, X_test_encoded, y_test_encoded, label_encoder, "2025-07-08_test_v1")
+    evaluate_model(lr_model, X_test_encoded, y_test_encoded, label_encoder, "results")
     print("Baseline logistic regression model evaluated successfully.")
 
     # Explain the baseline model using SHAP
-    shap_summary_plot(lr_model, X_test_encoded, "2025-07-08_test_v1")
+    shap_summary_plot(lr_model, X_test_encoded, "results")
     print("SHAP summary plot for basline logistic regression model generated successfully.")
 
     # Create a StratifiedShuffleSplit object for cross-validation
@@ -67,11 +67,11 @@ def main(dataset_path):
     print("XGBoost model calibrated successfully.")
 
     #  Evaluate the calibrated XGBoost model
-    evaluate_and_plot(calibrated_xgb_model, X_test_reduced, y_test_encoded, label_encoder, "XGB", "./2025-07-08_test_v1/")
+    evaluate_and_plot(calibrated_xgb_model, X_test_reduced, y_test_encoded, label_encoder, "XGB", "./results/")
     print("Calibrated XGBoost model evaluated successfully.")
     
     # Explain the calibrated XGBoost model using SHAP
-    plot_shap_summary(calibrated_xgb_model, X_test_reduced, "./2025-07-08_test_v1/figures/XGB_calibrated_shap_summary.png", class_index=0)
+    plot_shap_summary(calibrated_xgb_model, X_test_reduced, "./results/figures/XGB_calibrated_shap_summary.png", class_index=0)
     print("SHAP summary plot for calibrated XGBoost model generated successfully.")
 
     # Train Random Forest model with reduced features and Bayesian optimization
@@ -83,11 +83,11 @@ def main(dataset_path):
     print("Random Forest model calibrated successfully.")
 
     # Evaluate the calibrated Random Forest model
-    evaluate_and_plot(calibrated_rf_model, X_test_reduced, y_test_encoded, label_encoder, "RF", "./2025-07-08_test_v1/")
+    evaluate_and_plot(calibrated_rf_model, X_test_reduced, y_test_encoded, label_encoder, "RF", "./results/")
     print("Calibrated Random Forest model evaluated successfully.")
 
     # Explain the calibrated Random Forest model using SHAP
-    plot_shap_summary(calibrated_rf_model, X_test_reduced, "./2025-07-08_test_v1/figures/RF_calibrated_shap_summary.png", class_index=0)
+    plot_shap_summary(calibrated_rf_model, X_test_reduced, "./results/figures/RF_calibrated_shap_summary.png", class_index=0)
     print("SHAP summary plot for calibrated Random Forest model generated successfully.")
 
 if __name__ == "__main__":
