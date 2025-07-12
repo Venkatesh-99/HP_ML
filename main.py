@@ -87,7 +87,7 @@ def main(dataset_path):
     print("Calibrated Random Forest model evaluated successfully.")
 
     # Explain the calibrated Random Forest model using SHAP
-    plot_shap_summary(calibrated_rf_model, X_test_reduced, "./results/figures/RF_calibrated_shap_summary.png", class_index=0)
+    plot_shap_summary(calibrated_rf_model, X_test_reduced, "./results/figures/RF_calibrated_shap_summary.png", class_index=1)
     print("SHAP summary plot for calibrated Random Forest model generated successfully.")
 
 if __name__ == "__main__":
