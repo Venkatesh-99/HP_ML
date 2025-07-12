@@ -73,4 +73,10 @@ If you use this repository for your research, please also cite the original tool
 - iFeatureOmega: Chen Z., et al., *Nucleic Acids Research*, 2022, [DOI](https://doi.org/10.1093/nar/gkac351).
 - MathFeature: Bonidia R. P., et al., *Briefings in Bioinformatics*, 2022, [DOI](https://doi.org/10.1093/bib/bbab434).
 
+## Contact
+
+For questions or support, contact:  
+- [Venkatesh N](mailto:venkateshn51099@gmail.com)
+- [Sreya P Warrier](mailto:sreyapw@gmail.com)
+
 ---
