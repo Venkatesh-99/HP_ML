@@ -65,6 +65,17 @@ These tools are used for feature extraction and must be installed separately:
 
 This will install all necessary packages and dependencies for running the workflow and notebooks.
 
+### Installing Snippy and BLAST+
+These tools are used to extract additional genomic features:
+
+- **Snippy**: Used for extracting variant annotation counts from VCF files.
+- **BLAST+**: Used for generating virulence gene presence/absence profiles.
+
+Refer to the official documentation for installation and usage instructions:
+
+- [Snippy](https://github.com/tseemann/snippy)
+- [BLAST+](https://blast.ncbi.nlm.nih.gov/doc/blast-help/downloadblastdata.html#blast-executables) 
+
 ## Usage
 
 To run the workflow, execute:
@@ -111,12 +122,15 @@ A notebook version of the workflow is available in `notebooks/HP_ML.ipynb`. This
 
 - Chen, Z., et al. (2022). **iFeatureOmega: an integrative platform for engineering, visualization and analysis of features from molecular sequences, structural and ligand data sets**. [GitHub Repository](https://github.com/Superzchen/iFeatureOmega-CLI)
 - Bonidia, R. P., et al. (2021). **MathFeature: feature extraction package for DNA, RNA and protein sequences based on mathematical descriptors**. [GitHub Repository](https://github.com/Bonidia/MathFeature)
+- Seemann, T. (2015). **Snippy: fast bacterial variant calling from NGS reads**. [GitHub Repository](https://github.com/tseemann/snippy)
+- Camacho, C., et al. (2009). **BLAST+: architecture and applications**. *BMC Bioinformatics*, 10:421. [NCBI BLAST+ Documentation](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs)
 
 If you use this repository for your research, please also cite the original tools:
 
-- iFeatureOmega: Chen Z., et al., *Nucleic Acids Research*, 2022, [DOI](https://doi.org/10.1093/nar/gkac351).
-- MathFeature: Bonidia R. P., et al., *Briefings in Bioinformatics*, 2022, [DOI](https://doi.org/10.1093/bib/bbab434).
-
+- iFeatureOmega: Chen Z., et al., *Nucleic Acids Research*, 2022. [DOI](https://doi.org/10.1093/nar/gkac351).
+- MathFeature: Bonidia R. P., et al., *Briefings in Bioinformatics*, 2022. [DOI](https://doi.org/10.1093/bib/bbab434).
+- Snippy: Seemann T., *Snippy: fast bacterial variant calling from NGS reads*, 2015. [GitHub Repository](https://github.com/tseemann/snippy).
+- BLAST+: Camacho C., et al., *BMC Bioinformatics*, 2009. [DOI](https://doi.org/10.1186/1471-2105-10-421).
 ## Contact
 
 For questions or support, contact:  
