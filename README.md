@@ -43,6 +43,26 @@ conda env create -f HP_ML.yml
 conda activate HP_ML
 ```
 
+### Installing iFeatureOmega and MathFeature
+
+These tools are used for feature extraction and must be installed separately:
+
+- **iFeatureOmega**
+  - Visit the [iFeatureOmega GitHub page](https://github.com/Superzchen/iFeatureOmega-CLI) for full instructions.
+  - Basic installation:
+    ```bash
+    pip install iFeatureOmegaCLI
+    ```
+
+- **MathFeature**
+  - Visit the [MathFeature GitHub page](https://github.com/Bonidia/MathFeature) for full instructions.
+  - Basic installation:
+    ```bash
+    git clone https://github.com/Bonidia/MathFeature.git MathFeature
+    cd MathFeature 
+    conda env create -f mathfeature-terminal.yml -n mathfeature-terminal
+    ```
+
 This will install all necessary packages and dependencies for running the workflow and notebooks.
 
 ## Usage
@@ -58,6 +78,30 @@ You will be prompted to enter the path to your dataset (e.g., `data/dataset.xlsx
 ## Results
 
 Model outputs, evaluation reports, and SHAP plots are saved in the `results/` directory.
+
+## Output Directory Structure
+
+The main outputs are saved in the `results/` directory, organized as follows:
+
+```
+results/
+├── LR_classification_report.csv
+├── RF_classification_report.csv
+├── XGB_classification_report.csv
+└── figures/
+    ├── LR_shap_summary_plot.png
+    ├── XGB_calibrated_shap_summary.png
+    ├── RF_calibrated_shap_summary.png
+    ├── LR_ROC_PR.png
+    ├── LR_ROC_PR.pdf
+    ├── XGB_ROC_PR.png
+    ├── XGB_ROC_PR.pdf
+    ├── RF_ROC_PR.png
+    └── RF_ROC_PR.pdf
+```
+
+- `results/` contains classification reports for each model.
+- `results/figures/` contains SHAP summary plots, AUROC and AUPRC curves, and other visualizations generated during model evaluation and interpretation.
 
 ## Jupyter Notebook
 
