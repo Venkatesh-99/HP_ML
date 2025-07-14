@@ -101,7 +101,7 @@ results/
 ```
 
 - `results/` contains classification reports for each model.
-- `results/figures/` contains SHAP summary plots, AUROC and AUPRC curves, and other visualizations generated during model evaluation and interpretation.
+- `results/figures/` contains SHAP summary plots, AUROC and AUPRC curves generated during model evaluation and interpretation.
 
 ## Jupyter Notebook
 
