@@ -1,0 +1,7 @@
+Kmer type 1
+RCKmer type 1
+NAC
+CKSNAP type 1
+MMI
+Z_curve_144bit
+
