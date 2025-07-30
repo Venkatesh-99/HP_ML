@@ -1,5 +1,7 @@
 # Project Overview
 
+[![DOI](https://zenodo.org/badge/1015989400.svg)](https://doi.org/10.5281/zenodo.16598965)
+
 *Helicobacter pylori* (*H. pylori*) is a globally prevalent gastric pathogen implicated in a spectrum of clinical outcomes, from chronic gastritis to gastric cancer. While most infected individuals develop gastritis, only a minority progress to severe diseases like gastric cancer, influenced by bacterial, host, and environmental factors. This study presents a supervised machine learning framework to predict whether an *H. pylori* infection will result in gastric cancer or a non-malignant outcome, using a combination of clinical and genome-derived features.
 
 A curated dataset of 1,363 *H. pylori* genomes with host metadata and annotated genomic features was used. Feature extraction included gene presence/absence profiles, sequence descriptors from [iFeatureOmega](https://github.com/Superzchen/iFeatureOmega-CLI) and [MathFeature](https://github.com/Bonidia/MathFeature), and aggregate variant annotation features. The workflow trains a white-box logistic regression model and black-box eXtreme Gradient Boosting (XGBoost) and Random Forest models, utilizing SMOTE-NC to address class imbalance. SHAP values are used for model interpretability.
