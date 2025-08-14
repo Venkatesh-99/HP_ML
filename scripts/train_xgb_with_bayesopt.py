@@ -27,15 +27,16 @@ def train_xgb_with_bayes(X_train, y_train, cat_indices, cv_splitter):
         ))
     ])
 
-    search_space = {
-        'classifier__n_estimators': Integer(50, 1000),
-        'classifier__max_depth': Integer(3, 7),
-        'classifier__learning_rate': Real(0.01, 0.1),
-        'classifier__subsample': Real(0.5, 1),
-        'classifier__colsample_bytree': Real(0.5, 1),
-        'classifier__min_child_weight': Integer(1, 10),
-        'classifier__gamma': Real(0, 5),
-        'classifier__reg_alpha': Real(1e-9, 10.0, prior='log-uniform')
+    search_space = {                      # The hyperparameter search space
+    'classifier__n_estimators': Integer(50, 200),
+    'classifier__max_depth': Integer(3, 5),
+    'classifier__learning_rate': Real(0.01, 0.1),
+    'classifier__subsample': Real(0.7, 0.9),  # for bagging
+    'classifier__colsample_bytree': Real(0.7, 0.9),  # for feature sampling
+    'classifier__min_child_weight': Integer(5, 15),  # minimum sum of instance weight needed in a child
+    'classifier__gamma': Real(0.1, 2),  # minimum loss reduction required to make a split
+    'classifier__reg_alpha': Real(0.1, 10), # L1 regularization
+    'classifier__reg_lambda': Real(0.1, 10)  # L2 regularization
     }
 
     opt = BayesSearchCV(
