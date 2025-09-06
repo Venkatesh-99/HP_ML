@@ -18,18 +18,17 @@ def train_rf_with_bayes(X_train, y_train, categorical_indices, cv_splitter):
     """
     rf_pipeline = Pipeline([
         ('smotenc', SMOTENC(categorical_features=categorical_indices, random_state=26)),
-        ('classifier_rf', RandomForestClassifier(random_state=26))
+        ('classifier', RandomForestClassifier(random_state=26))
     ])
 
     params_rf_bayes = {
-    'classifier_rf__n_estimators': Integer(100, 1500),
-    'classifier_rf__criterion': Categorical(['gini', 'entropy']),
-    'classifier_rf__max_depth': Integer(5, 20),
-    'classifier_rf__min_samples_split': Integer(2, 15),
-    'classifier_rf__min_samples_leaf': Integer(1, 10),
-    'classifier_rf__bootstrap': Categorical([True]),
-    'classifier_rf__max_features': Categorical(['sqrt', 'log2']),
-    'classifier_rf__ccp_alpha': Real(1e-6, 0.01, prior='log-uniform'),
+        'classifier__n_estimators': Integer(50, 2000),
+        'classifier__criterion': Categorical(['gini', 'entropy', 'log_loss']),
+        'classifier__max_depth': Integer(3, 10),
+        'classifier__min_samples_split': Integer(2, 10),
+        'classifier__min_samples_leaf': Integer(1, 10),
+        'classifier__bootstrap': Categorical([True, False]),
+        'classifier__ccp_alpha': Real(1e-6, 0.01, prior='log-uniform'),
     }
 
     opt = BayesSearchCV(
@@ -37,8 +36,8 @@ def train_rf_with_bayes(X_train, y_train, categorical_indices, cv_splitter):
         search_spaces=params_rf_bayes,
         scoring='recall',
         cv=cv_splitter,
-        n_iter=30,
-        n_points=2,
+        n_iter=100,
+        n_points=3,
         n_jobs=2,
         verbose=2,
         random_state=26
