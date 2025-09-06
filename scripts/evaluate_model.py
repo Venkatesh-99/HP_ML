@@ -14,7 +14,7 @@ from sklearn.calibration import calibration_curve
 plt.rcParams.update({           
     'font.size': 8, 'axes.titlesize': 9, 'axes.labelsize': 8,
     'xtick.labelsize': 7, 'ytick.labelsize': 7, 'legend.fontsize': 7,
-    'figure.dpi': 1000, 'savefig.dpi': 1000
+    'figure.dpi': 1200, 'savefig.dpi': 1200
 })
 
 def get_class_info(le, pos_class="Gastric cancer"):
@@ -93,12 +93,14 @@ def plot_confusion_matrix(y_test, y_pred, class_info, title="Confusion Matrix"):
     
     return fig
 
-def plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci, title="ROC & PR Curves"):
+def plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci_pos, ap_ci_neg, title="ROC & PR Curves"):
     """ROC and PR curves side by side"""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
     
     pos_label = class_info['pos_label']
+    neg_label = class_info['neg_label']
     pos_name = class_info['pos_name']
+    neg_name = class_info['neg_name']
     
     # ROC
     fpr, tpr, _ = roc_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
@@ -111,9 +113,12 @@ def plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci, title="ROC & PR Curve
     ax1.legend()
     
     # PR
-    prec, rec, _ = precision_recall_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
-    ax2.plot(rec, prec, 'b-', linewidth=2,
-             label=f"{pos_name} - AP = {ap_ci['mean']:.3f} (95% CI: {ap_ci['ci_low']:.3f}–{ap_ci['ci_high']:.3f})")
+    prec_pos, rec_pos, _ = precision_recall_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
+    prec_neg, rec_neg, _ = precision_recall_curve(y_test, y_prob[:, neg_label], pos_label=neg_label)
+    ax2.plot(rec_pos, prec_pos, 'b-', linewidth=2,
+             label=f"{pos_name} - AUPRC = {ap_ci_pos['mean']:.3f} (95% CI: {ap_ci_pos['ci_low']:.3f}–{ap_ci_pos['ci_high']:.3f})")
+    ax2.plot(rec_neg, prec_neg, 'g--', linewidth=2,
+             label=f"{neg_name} - AUPRC = {ap_ci_neg['mean']:.3f} (95% CI: {ap_ci_neg['ci_low']:.3f}–{ap_ci_neg['ci_high']:.3f})")
     ax2.set_xlabel('Recall')
     ax2.set_ylabel('Precision')
     ax2.set_title('Precision-Recall Curve')
@@ -248,6 +253,12 @@ def create_metrics_table(y_test, y_pred, y_prob, class_info):
         f1_ci = bootstrap_ci(y_test, y_pred, None, 
                             lambda yt, yp: f1_score(yt, yp, pos_label=label, zero_division=0))
         
+        # AUPRC for this class
+        def ap_func_class(y_true, y_prob):
+            return average_precision_score(y_true, y_prob, pos_label=label)
+        
+        ap_ci = bootstrap_ci(y_test, None, y_prob[:, label], ap_func_class)
+        
         metrics_data.extend([
             {
                 'Class': class_name,
@@ -259,7 +270,7 @@ def create_metrics_table(y_test, y_pred, y_prob, class_info):
             },
             {
                 'Class': class_name,
-                'Metric': 'Recall' if label == pos_label else 'Specificity',
+                'Metric': 'Recall',
                 'Value': rec_ci['mean'],
                 'CI_Lower': rec_ci['ci_low'],
                 'CI_Upper': rec_ci['ci_high'],
@@ -272,6 +283,14 @@ def create_metrics_table(y_test, y_pred, y_prob, class_info):
                 'CI_Lower': f1_ci['ci_low'],
                 'CI_Upper': f1_ci['ci_high'],
                 'Final': f"{f1_ci['mean']:.3f} ({f1_ci['ci_low']:.3f}–{f1_ci['ci_high']:.3f})"
+            },
+            {
+                'Class': class_name,
+                'Metric': 'AUPRC',
+                'Value': ap_ci['mean'],
+                'CI_Lower': ap_ci['ci_low'],
+                'CI_Upper': ap_ci['ci_high'],
+                'Final': f"{ap_ci['mean']:.3f} ({ap_ci['ci_low']:.3f}–{ap_ci['ci_high']:.3f})"
             }
         ])
     
@@ -279,15 +298,11 @@ def create_metrics_table(y_test, y_pred, y_prob, class_info):
     # Accuracy
     acc_ci = bootstrap_ci(y_test, y_pred, None, lambda yt, yp: accuracy_score(yt, yp))
     
-    # AUC
+    # AUC-ROC (for positive class)
     def auc_func(y_true, y_prob):
         fpr, tpr, _ = roc_curve(y_true, y_prob, pos_label=pos_label)
         return auc(fpr, tpr)
     auc_ci = bootstrap_ci(y_test, None, y_prob[:, pos_label], auc_func)
-    
-    # Average Precision
-    ap_ci = bootstrap_ci(y_test, None, y_prob[:, pos_label], 
-                        lambda yt, yp: average_precision_score(yt, yp, pos_label=pos_label))
     
     # Add overall metrics
     overall_metrics = [
@@ -306,14 +321,6 @@ def create_metrics_table(y_test, y_pred, y_prob, class_info):
             'CI_Lower': auc_ci['ci_low'],
             'CI_Upper': auc_ci['ci_high'],
             'Final': f"{auc_ci['mean']:.3f} ({auc_ci['ci_low']:.3f}–{auc_ci['ci_high']:.3f})"
-        },
-        {
-            'Class': 'Overall',
-            'Metric': 'Average Precision',
-            'Value': ap_ci['mean'],
-            'CI_Lower': ap_ci['ci_low'],
-            'CI_Upper': ap_ci['ci_high'],
-            'Final': f"{ap_ci['mean']:.3f} ({ap_ci['ci_low']:.3f}–{ap_ci['ci_high']:.3f})"
         }
     ]
     
@@ -359,16 +366,21 @@ def evaluate_and_plot(model, X_test, y_test, le, save_dir, prefix,
     
     # Calculate metrics with CIs
     pos_label = class_info['pos_label']
+    neg_label = class_info['neg_label']
     
     def auc_func(y_true, y_prob):
         fpr, tpr, _ = roc_curve(y_true, y_prob, pos_label=pos_label)
         return auc(fpr, tpr)
     
-    def ap_func(y_true, y_prob):
+    def ap_func_pos(y_true, y_prob):
         return average_precision_score(y_true, y_prob, pos_label=pos_label)
     
+    def ap_func_neg(y_true, y_prob):
+        return average_precision_score(y_true, y_prob, pos_label=neg_label)
+    
     auc_ci = bootstrap_ci(y_test, None, y_prob[:, pos_label], auc_func)
-    ap_ci = bootstrap_ci(y_test, None, y_prob[:, pos_label], ap_func)
+    ap_ci_pos = bootstrap_ci(y_test, None, y_prob[:, pos_label], ap_func_pos)
+    ap_ci_neg = bootstrap_ci(y_test, None, y_prob[:, neg_label], ap_func_neg)
 
     metrics_table = create_metrics_table(y_test, y_pred, y_prob, class_info)
     
@@ -377,7 +389,7 @@ def evaluate_and_plot(model, X_test, y_test, le, save_dir, prefix,
     
     # Create plots
     fig1 = plot_confusion_matrix(y_test, y_pred, class_info, f"{model_name} Confusion Matrix")
-    fig2 = plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci, f"{model_name} Curves")
+    fig2 = plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci_pos, ap_ci_neg, f"{model_name} Curves")
     fig3 = plot_metrics_bar(y_test, y_pred, class_info, f"{model_name} Classification Metrics")
     fig4 = plot_calibration(y_test, y_prob, y_prob_raw, class_info, f"{model_name} Calibration")
     
@@ -393,7 +405,9 @@ def evaluate_and_plot(model, X_test, y_test, le, save_dir, prefix,
     print(f"Saved plots to {save_dir}/figures/")
     
     return {
-        'auc': auc_ci, 'ap': ap_ci, 'class_info': class_info,
+        'auc': auc_ci, 
+        'auprc_pos': ap_ci_pos, 
+        'auprc_neg': ap_ci_neg, 
+        'class_info': class_info,
         'report': report
     }
-
