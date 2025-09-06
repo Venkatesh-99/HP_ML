@@ -1,66 +1,57 @@
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder
 
 def stratified_split(df):
     """
     Perform a stratified split of the dataset into training and testing sets.
-    Parameters:
-    - df: DataFrame, the dataset to split.
-    Returns:
-    - X_train: DataFrame, training features.
-    - X_test: DataFrame, testing features.
-    - y_train: Series, training labels.
-    - y_test: Series, testing labels.
     """
     X = df.iloc[:, 1:-1]
     y = df.iloc[:, -1]
     sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=26)
     for train_idx, test_idx in sss.split(X, y):
-        return X.iloc[train_idx], X.iloc[test_idx], y.iloc[train_idx], y.iloc[test_idx]
+        return X.iloc[train_idx].copy(), X.iloc[test_idx].copy(), y.iloc[train_idx].copy(), y.iloc[test_idx].copy()
 
 def preprocess(X_train, y_train, X_test, y_test):
     """
     Preprocess the training and testing datasets.
-    Parameters:
-    - X_train: DataFrame, training features.
-    - y_train: Series, training labels.
-    - X_test: DataFrame, testing features.
-    - y_test: Series, testing labels.
-    Returns:
-    - X_train_encoded: DataFrame, preprocessed training features.
-    - y_train_enc: Series, encoded training labels.
-    - X_test_encoded: DataFrame, preprocessed testing features.
-    - y_test_enc: Series, encoded testing labels.
-    - le: LabelEncoder, fitted label encoder for the labels.
-    - encoder: OneHotEncoder, fitted one-hot encoder for categorical features.
+    Ensures 'Gastric cancer' = 1 and 'Non-gastric cancer' = 0.
     """
-    le = LabelEncoder()
     scaler = MinMaxScaler()
-    encoder = OneHotEncoder(sparse_output=False, handle_unknown="error")
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
+    le = LabelEncoder()
 
     y_train_enc = le.fit_transform(y_train)
     y_test_enc = le.transform(y_test)
 
+    print(f"Label encoding mapping: {dict(zip(le.classes_, le.transform(le.classes_)))}")
+    print(f"Gastric cancer count in y_train: {sum(y_train_enc)}")
+    print(f"Non-gastric cancer count in y_train: {len(y_train_enc) - sum(y_train_enc)}")
+
+    # ✅ Scale numeric features
     numeric_cols = X_train.select_dtypes(include=['int64', 'float64']).columns
-    X_train[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
-    X_test[numeric_cols] = scaler.transform(X_test[numeric_cols])
+    X_train_scaled = X_train.copy()
+    X_test_scaled = X_test.copy()
+    X_train_scaled[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
+    X_test_scaled[numeric_cols] = scaler.transform(X_test[numeric_cols])
 
-    X_train.loc[:, "homB":"vacAs1m1"] = X_train.loc[:, "homB":"vacAs1m1"].astype('object')
-    X_test.loc[:, "homB":"vacAs1m1"] = X_test.loc[:, "homB":"vacAs1m1"].astype('object')
+    # ✅ Convert specified columns to categorical
+    if "homB" in X_train.columns and "vacAs1m1" in X_train.columns:
+        X_train_scaled.loc[:, "homB":"vacAs1m1"] = X_train_scaled.loc[:, "homB":"vacAs1m1"].astype('object')
+        X_test_scaled.loc[:, "homB":"vacAs1m1"] = X_test_scaled.loc[:, "homB":"vacAs1m1"].astype('object')
 
-    cat_cols = X_train.select_dtypes(include=['object']).columns.tolist()
-    cat_cols_test = X_test.select_dtypes(include=['object']).columns.tolist()
-
-    one_hot_train = pd.DataFrame(encoder.fit_transform(X_train[cat_cols]),
+    # ✅ One-hot encode categorical features
+    cat_cols = X_train_scaled.select_dtypes(include=['object']).columns.tolist()
+    one_hot_train = pd.DataFrame(encoder.fit_transform(X_train_scaled[cat_cols]),
                                  columns=encoder.get_feature_names_out(cat_cols),
-                                 index=X_train.index)
-    one_hot_test = pd.DataFrame(encoder.transform(X_test[cat_cols_test]),
-                                columns=encoder.get_feature_names_out(cat_cols_test),
-                                index=X_test.index)
+                                 index=X_train_scaled.index)
+    one_hot_test = pd.DataFrame(encoder.transform(X_test_scaled[cat_cols]),
+                                columns=encoder.get_feature_names_out(cat_cols),
+                                index=X_test_scaled.index)
 
-    X_train_encoded = pd.concat([X_train.drop(cat_cols, axis=1), one_hot_train], axis=1)
-    X_test_encoded = pd.concat([X_test.drop(cat_cols_test, axis=1), one_hot_test], axis=1)
+    X_train_encoded = pd.concat([X_train_scaled.drop(cat_cols, axis=1), one_hot_train], axis=1)
+    X_test_encoded = pd.concat([X_test_scaled.drop(cat_cols, axis=1), one_hot_test], axis=1)
 
     # Convert one-hot columns to category
     cat_features = one_hot_train.columns
