@@ -4,6 +4,7 @@ import numpy as np
 import shap
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 import xgboost as xgb
 
 def explain_model_with_shap_plots(
@@ -54,6 +55,12 @@ def explain_model_with_shap_plots(
     elif isinstance(model, LogisticRegression):
         print("Using LinearExplainer for logistic regression.")
         explainer = shap.LinearExplainer(model, X_train_num)
+    elif isinstance(model, SVC):
+        print("Using KernelExplainer for SVM.")
+        # Use a smaller subset of training data for KernelExplainer to avoid computational issues
+        background_size = min(100, len(X_train_num))
+        background = shap.sample(X_train_num, background_size)
+        explainer = shap.KernelExplainer(pipeline.predict_proba, background)
     else:
         print("Using generic Explainer.")
         explainer = shap.Explainer(model, X_train_num)
@@ -72,17 +79,18 @@ def explain_model_with_shap_plots(
     else:  # Single output
         values_to_plot = shap_values
 
-    # --- Plot SHAP summary ---
+    # --- Plot SHAP summary (create new figure) ---
+    # plt.figure(figsize=(20, 10))  # Create new figure explicitly
     shap.summary_plot(
         values_to_plot, X_test_num,
         feature_names=X_test_num.columns.tolist(),
-        plot_size=(20, 10),
         plot_type="bar",
+        max_display=10,
         show=False
     )
     shap_path = os.path.join(save_dir, "figures", "shap_summary_plot.png")
-    plt.savefig(shap_path, dpi=1200, bbox_inches="tight")
-    plt.close()
+    plt.savefig(shap_path, dpi=1200)
+    plt.close()  # Close the figure to prevent overlap
     print(f"SHAP summary plot saved to: {shap_path}")
 
     # --- SHAP Waterfall Plot for individual sample ---
@@ -109,7 +117,7 @@ def explain_model_with_shap_plots(
             expected_value = explainer.expected_value[class_index]
         else:
             waterfall_values = shap_values[sample_idx]
-            expected_value = explainer.expected_value
+            expected_value = explainer.expected_value if hasattr(explainer, 'expected_value') else 0
     
     class_name = "Gastric cancer" if class_index == 0 else "Non-gastric cancer"
     print(f"Explaining prediction for: {class_name}")
@@ -122,11 +130,12 @@ def explain_model_with_shap_plots(
         feature_names=X_test_num.columns.tolist()
     )
     
-    # Generate waterfall plot
+    # Create new figure for waterfall plot
+    plt.figure(figsize=(12, 8))  # Create new figure explicitly
     shap.waterfall_plot(explanation_obj, show=False)
     
     # Save waterfall plot
     waterfall_path = os.path.join(save_dir, "figures", f"shap_waterfall_sample_{sample_idx}.png")
     plt.savefig(waterfall_path, dpi=1200, bbox_inches="tight", facecolor='white')
-    plt.close()
+    plt.close()  # Close the figure to prevent overlap
     print(f"SHAP waterfall plot saved to: {waterfall_path}")
