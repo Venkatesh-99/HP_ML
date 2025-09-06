@@ -5,7 +5,7 @@ import pandas as pd
 
 def shap_bayes_feature_selection(X_train, y_train, X_test, cv_splitter, scoring_metric='recall',
                                    eval_metric='recall', early_stopping_rounds=30, step=0.2,
-                                   random_state=26, verbose=2):
+                                   random_state=26, verbose=0):
     """
     Perform SHAP-based feature elimination with Bayesian hyperparameter optimization using LightGBM.
 
@@ -40,6 +40,7 @@ def shap_bayes_feature_selection(X_train, y_train, X_test, cv_splitter, scoring_
     search = BayesSearchCV(
         estimator=base_model,
         search_spaces=param_grid,
+        verbose=0,
         random_state=random_state
     )
     
@@ -52,7 +53,7 @@ def shap_bayes_feature_selection(X_train, y_train, X_test, cv_splitter, scoring_
         eval_metric=eval_metric,
         early_stopping_rounds=early_stopping_rounds,
         n_jobs=-1,
-        verbose=verbose,
+        verbose=0,
         random_state=random_state
     )
 
@@ -70,5 +71,14 @@ def shap_bayes_feature_selection(X_train, y_train, X_test, cv_splitter, scoring_
 
     categorical_features_subset = X_train_reduced.select_dtypes(include=['category']).columns # Selecting the categorical features from the reduced training set
     categorical_indices_subset = [X_train_reduced.columns.get_loc(col) for col in categorical_features_subset] # Getting the indices of the categorical features for SMOTENC
+
+    print(f"Categorical features in reduced set: {list(categorical_features_subset)}")
+    print(f"Selected features: {selected_features}")
+    
+    # Convert report to DataFrame
+    report_df = pd.DataFrame(report)
+
+    # Convert DataFrame to CSV
+    report_df.to_csv('./results/feature_elimination_report.csv', index=False)
 
     return X_train_reduced, X_test_reduced, categorical_indices_subset, selected_features
