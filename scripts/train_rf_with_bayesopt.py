@@ -36,8 +36,8 @@ def train_rf_with_bayes(X_train, y_train, categorical_indices, cv_splitter):
         search_spaces=params_rf_bayes,
         scoring='recall',
         cv=cv_splitter,
-        n_iter=100,
-        n_points=3,
+        n_iter=60,
+        n_points=2,
         n_jobs=2,
         verbose=2,
         random_state=26
