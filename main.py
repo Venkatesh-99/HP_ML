@@ -7,7 +7,7 @@ from scripts.feature_selection import shap_bayes_feature_selection
 from scripts.train_xgb_with_bayesopt import train_xgb_with_bayes
 from scripts.calibrate_model import calibrate_classifier
 from scripts.evaluate_model import evaluate_and_plot
-from scripts.explain_black_box_models import explain_model_with_shap_plots
+from scripts.explain_models import explain_model_with_shap_plots
 from scripts.train_rf_with_bayesopt import train_rf_with_bayes
 
 import warnings
