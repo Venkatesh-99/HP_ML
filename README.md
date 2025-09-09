@@ -96,19 +96,15 @@ The main outputs are saved in the `results/` directory, organized as follows:
 
 ```
 results/
-├── LR_classification_report.csv
-├── RF_classification_report.csv
-├── XGB_classification_report.csv
-└── figures/
-    ├── LR_shap_summary_plot.png
-    ├── XGB_calibrated_shap_summary.png
-    ├── RF_calibrated_shap_summary.png
-    ├── LR_ROC_PR.png
-    ├── LR_ROC_PR.pdf
-    ├── XGB_ROC_PR.png
-    ├── XGB_ROC_PR.pdf
-    ├── RF_ROC_PR.png
-    └── RF_ROC_PR.pdf
+├── LR/
+│   ├── [evaluation plots and metrics for Logistic Regression]
+│   └── [SHAP plots for Logistic Regression model]
+├── XGB/
+│   ├── [evaluation plots and metrics for XGBoost]
+│   └── [SHAP plots for calibrated XGBoost model]
+└── RF/
+    ├── [evaluation plots and metrics for Random Forest]
+    └── [SHAP plots for calibrated Random Forest model]
 ```
 
 - `results/` contains classification reports for each model.
