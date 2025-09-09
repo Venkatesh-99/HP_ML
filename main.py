@@ -44,13 +44,13 @@ def main(dataset_path):
     print("Baseline logistic regression model trained successfully.")
 
     # Evaluate the baseline model
-    evaluate_and_plot(lr_model, X_test_encoded, y_test_encoded, label_encoder, "./results/2025-08-29_LR", "LR",
+    evaluate_and_plot(lr_model, X_test_encoded, y_test_encoded, label_encoder, "./results/LR", "LR",
                       model_name="Logistic Regression", raw_model=None)
     print("Baseline logistic regression model evaluated successfully.")
 
     # Explain the baseline model using SHAP
-    explain_model_with_shap_plots(lr_model, X_train_encoded, X_test_encoded, "./results/2025-08-29_LR",
-                                  classifier_step_name="logisticregression", sample_idx=3, class_index=None)
+    explain_model_with_shap_plots(lr_model, X_train_encoded, X_test_encoded, "./results/LR",
+                                  classifier_step_name="logisticregression", sample_idx=2, class_index=None)
     print("SHAP summary plot for baseline logistic regression model generated successfully.")
 
     # Create a StratifiedShuffleSplit object for cross-validation
@@ -83,13 +83,13 @@ def main(dataset_path):
     print("XGBoost model calibrated successfully.")
 
     #  Evaluate the calibrated XGBoost model
-    evaluate_and_plot(calibrated_xgb_model, X_test_reduced, y_test_encoded, label_encoder, "./results/2025-08-29_XGB", "XGB",
+    evaluate_and_plot(calibrated_xgb_model, X_test_reduced, y_test_encoded, label_encoder, "./results/XGB", "XGB",
                       model_name="XGBoost", raw_model=xgb_model)
     print("Calibrated XGBoost model evaluated successfully.")
     
     # Explain the calibrated XGBoost model using SHAP
-    explain_model_with_shap_plots(calibrated_xgb_model, X_train_reduced, X_test_reduced, "./results/2025-08-29_XGB", classifier_step_name="classifier",
-                                  sample_idx=3, class_index=None)
+    explain_model_with_shap_plots(calibrated_xgb_model, X_train_reduced, X_test_reduced, "./results/XGB", classifier_step_name="classifier",
+                                  sample_idx=2, class_index=None)
     
     print("SHAP summary plot for calibrated XGBoost model generated successfully.")
 
@@ -98,13 +98,13 @@ def main(dataset_path):
     print("Random Forest model calibrated successfully.")
 
     # Evaluate the calibrated Random Forest model
-    evaluate_and_plot(calibrated_rf_model, X_test_reduced, y_test_encoded, label_encoder, "./results/2025-08-29_RF", "RF",
+    evaluate_and_plot(calibrated_rf_model, X_test_reduced, y_test_encoded, label_encoder, "./results/RF", "RF",
                       model_name="Random Forest", raw_model=rf_model)
     print("Calibrated Random Forest model evaluated successfully.")
 
     # Explain the calibrated Random Forest model using SHAP
-    explain_model_with_shap_plots(calibrated_rf_model, X_train_reduced, X_test_reduced, "./results/2025-08-29_RF", classifier_step_name="classifier", 
-                                  sample_idx=3, class_index=0)
+    explain_model_with_shap_plots(calibrated_rf_model, X_train_reduced, X_test_reduced, "./results/RF", classifier_step_name="classifier", 
+                                  sample_idx=2, class_index=0)
     print("SHAP summary plot for calibrated Random Forest model generated successfully.")
 
     print("\n" + "="*60)
