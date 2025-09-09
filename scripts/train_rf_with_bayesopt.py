@@ -1,4 +1,3 @@
-# train_rf_bayes.py
 from imblearn.over_sampling import SMOTENC
 from imblearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
@@ -37,7 +36,7 @@ def train_rf_with_bayes(X_train, y_train, categorical_indices, cv_splitter):
         search_spaces=params_rf_bayes,
         scoring='recall',
         cv=cv_splitter,
-        n_iter=30,
+        n_iter=60,
         n_points=2,
         n_jobs=2,
         verbose=2,

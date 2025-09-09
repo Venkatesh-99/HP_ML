@@ -35,7 +35,8 @@ def train_xgb_with_bayes(X_train, y_train, cat_indices, cv_splitter):
         'classifier__colsample_bytree': Real(0.5, 1),
         'classifier__min_child_weight': Integer(1, 10),
         'classifier__gamma': Real(0, 5),
-        'classifier__reg_alpha': Real(1e-9, 10.0, prior='log-uniform')
+        'classifier__reg_alpha': Real(1e-9, 10.0, prior='log-uniform'),
+        'classifier__reg_lambda': Real(1e-9, 10.0, prior='log-uniform'),
     }
 
     opt = BayesSearchCV(
@@ -43,7 +44,7 @@ def train_xgb_with_bayes(X_train, y_train, cat_indices, cv_splitter):
         search_spaces=search_space,
         scoring='recall',
         cv=cv_splitter,
-        n_iter=30,
+        n_iter=60,
         n_points=2,
         n_jobs=2,
         verbose=2,
