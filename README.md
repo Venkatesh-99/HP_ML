@@ -15,10 +15,10 @@ The main script, `main.py`, orchestrates the following steps:
 3. **Train/Test Split**: Stratified splitting to maintain class balance.
 4. **Preprocessing**: Encodes categorical features and labels.
 5. **Baseline Model**: Trains and evaluates a logistic regression model.
-6. **Model Explanation**: Uses SHAP to interpret the baseline model.
-7. **Feature Selection**: Selects important features using SHAP and Bayesian optimization.
-8. **XGBoost Model**: Trains, calibrates, evaluates, and explains an XGBoost model.
-9. **Random Forest Model**: Trains, calibrates, evaluates, and explains a Random Forest model.
+6. **Feature Selection**: Selects important features using SHAP and Bayesian optimization.
+7. **XGBoost Model**: Trains, calibrates, evaluates, and explains an XGBoost model.
+8. **Random Forest Model**: Trains, calibrates, evaluates, and explains a Random Forest model.
+9. **Model Explanation**: Uses SHAP to interpret modela.
 
 ## Scripts Directory
 
@@ -27,14 +27,12 @@ Each script in the `scripts/` folder is responsible for a specific part of the w
 - `load_dataset.py`: Loads the dataset from an Excel file.
 - `split_and_preprocess.py`: Splits the data and preprocesses features/labels.
 - `train_baseline_lr_model.py`: Trains a baseline logistic regression model.
-- `evaluate_baseline_lr_model.py`: Evaluates the logistic regression model.
-- `explain_baseline_lr_model.py`: Generates SHAP summary plots for the baseline model.
 - `feature_selection.py`: Performs feature selection using SHAP and Bayesian optimization.
 - `train_xgb_with_bayesopt.py`: Trains an XGBoost model with Bayesian optimization.
 - `calibrate_model.py`: Calibrates classifiers for improved probability estimates.
-- `evaluate_model.py`: Evaluates and plots results for trained models.
-- `explain_black_box_models.py`: Generates SHAP plots for black-box models.
 - `train_rf_with_bayesopt.py`: Trains a Random Forest model with Bayesian optimization.
+- `evaluate_model.py`: Evaluates and plots results for trained models.
+- `explain_models.py`: Generates SHAP plots for trained models.
 
 ## Installation
 
