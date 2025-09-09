@@ -3,11 +3,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import (
-    confusion_matrix, roc_curve, auc, precision_recall_curve, brier_score_loss, 
-    precision_score, recall_score, f1_score, accuracy_score, 
-    average_precision_score, classification_report
-)
+
+from sklearn.metrics import (roc_curve, auc, precision_recall_curve,
+                             average_precision_score, classification_report,
+                             confusion_matrix, precision_score, recall_score,
+                             f1_score, accuracy_score, brier_score_loss)
 
 from sklearn.calibration import calibration_curve
 
@@ -59,74 +59,6 @@ def bootstrap_ci(y_true, y_pred, y_prob, metric_func, n=1000):
         'ci_high': np.percentile(scores, 97.5)
     }
 
-def plot_confusion_matrix(y_test, y_pred, class_info, title="Confusion Matrix"):
-    """Basic confusion matrix plot"""
-    labels = [class_info['neg_label'], class_info['pos_label']]  
-    names = [class_info['neg_name'], class_info['pos_name']]
-    
-    cm = confusion_matrix(y_test, y_pred, labels=labels)
-    cm_pct = cm.astype('float') / cm.sum() * 100
-    
-    fig, ax = plt.subplots(figsize=(6, 5))
-    sns.heatmap(cm, annot=False, cmap='Blues', 
-                xticklabels=names, yticklabels=names, ax=ax)
-    
-    # Add count + percentage annotations
-    for i in range(2):
-        for j in range(2):
-            color = 'white' if cm[i, j] > cm.max() / 2 else 'black'
-            ax.text(j + 0.5, i + 0.5, f'{cm[i, j]:,}\n({cm_pct[i, j]:.1f}%)', 
-                   ha='center', va='center', color=color, fontweight='bold')
-    
-    ax.set_title(title, fontweight='bold')
-    ax.set_xlabel('Predicted Labels')
-    ax.set_ylabel('Actual Labels')
-    
-    # Quick metrics for subtitle
-    tn, fp, fn, tp = cm.ravel()
-    acc = (tp + tn) / cm.sum()
-    sens = tp / (tp + fn) if (tp + fn) > 0 else 0
-    spec = tn / (tn + fp) if (tn + fp) > 0 else 0
-    
-    subtitle = f'Accuracy: {acc:.3f} | Sensitivity: {sens:.3f} | Specificity: {spec:.3f}'
-    ax.text(0.5, -0.12, subtitle, transform=ax.transAxes, ha='center', style='italic')
-    
-    return fig
-
-def plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci_pos, ap_ci_neg, title="ROC & PR Curves"):
-    """ROC and PR curves side by side"""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
-    
-    pos_label = class_info['pos_label']
-    neg_label = class_info['neg_label']
-    pos_name = class_info['pos_name']
-    neg_name = class_info['neg_name']
-    
-    # ROC
-    fpr, tpr, _ = roc_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
-    ax1.plot(fpr, tpr, 'r-', linewidth=2,
-             label=f"{pos_name} - AUC = {auc_ci['mean']:.3f} (95% CI: {auc_ci['ci_low']:.3f}–{auc_ci['ci_high']:.3f})")
-    ax1.plot([0, 1], [0, 1], 'k--', alpha=0.5)
-    ax1.set_xlabel('False Positive Rate')
-    ax1.set_ylabel('True Positive Rate') 
-    ax1.set_title('ROC Curve')
-    ax1.legend()
-    
-    # PR
-    prec_pos, rec_pos, _ = precision_recall_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
-    prec_neg, rec_neg, _ = precision_recall_curve(y_test, y_prob[:, neg_label], pos_label=neg_label)
-    ax2.plot(rec_pos, prec_pos, 'b-', linewidth=2,
-             label=f"{pos_name} - AUPRC = {ap_ci_pos['mean']:.3f} (95% CI: {ap_ci_pos['ci_low']:.3f}–{ap_ci_pos['ci_high']:.3f})")
-    ax2.plot(rec_neg, prec_neg, 'g--', linewidth=2,
-             label=f"{neg_name} - AUPRC = {ap_ci_neg['mean']:.3f} (95% CI: {ap_ci_neg['ci_low']:.3f}–{ap_ci_neg['ci_high']:.3f})")
-    ax2.set_xlabel('Recall')
-    ax2.set_ylabel('Precision')
-    ax2.set_title('Precision-Recall Curve')
-    ax2.legend()
-    
-    plt.tight_layout()
-    return fig
-
 def plot_calibration(y_test, y_prob_cal, y_prob_raw, class_info, title="Calibration"):
     """Before/after calibration plots"""
     pos_label = class_info['pos_label']
@@ -175,61 +107,6 @@ def plot_calibration(y_test, y_prob_cal, y_prob_raw, class_info, title="Calibrat
     
     plt.tight_layout()
     return fig
-
-def plot_metrics_bar(y_test, y_pred, class_info, title="Classification Metrics"):
-    """Bar plot of precision, recall, F1 with confidence intervals"""
-    pos_label = class_info['pos_label']
-    neg_label = class_info['neg_label']
-    
-    # Calculate metrics with CIs for both classes
-    metrics = {}
-    for label, name in [(pos_label, class_info['pos_name']), (neg_label, class_info['neg_name'])]:
-        metrics[name] = {
-            'Precision': bootstrap_ci(y_test, y_pred, None, lambda yt, yp: precision_score(yt, yp, pos_label=label, zero_division=0)),
-            'Recall': bootstrap_ci(y_test, y_pred, None, lambda yt, yp: recall_score(yt, yp, pos_label=label, zero_division=0)),
-            'F1-Score': bootstrap_ci(y_test, y_pred, None, lambda yt, yp: f1_score(yt, yp, pos_label=label, zero_division=0))
-        }
-    
-    fig, ax = plt.subplots(figsize=(8, 5))
-    
-    metric_names = ['Precision', 'Recall', 'F1-Score']
-    class_names = list(metrics.keys())
-    
-    # Get data
-    pos_means = [metrics[class_names[0]][m]['mean'] for m in metric_names]
-    neg_means = [metrics[class_names[1]][m]['mean'] for m in metric_names]
-    
-    pos_errs = [(metrics[class_names[0]][m]['ci_high'] - metrics[class_names[0]][m]['ci_low'])/2 for m in metric_names]
-    neg_errs = [(metrics[class_names[1]][m]['ci_high'] - metrics[class_names[1]][m]['ci_low'])/2 for m in metric_names]
-    
-    # Bar positions
-    y_pos = np.arange(len(metric_names))
-    width = 0.35
-    
-    # Create bars
-    bars1 = ax.barh(y_pos - width/2, pos_means, width, xerr=pos_errs, 
-                    label=class_names[0], color='#E31A1C', alpha=0.8, capsize=3, hatch='///')
-    bars2 = ax.barh(y_pos + width/2, neg_means, width, xerr=neg_errs, 
-                    label=class_names[1], color='#1F78B4', alpha=0.8, capsize=3, hatch='...')
-    
-    # Add value labels
-    for i, (bar1, bar2) in enumerate(zip(bars1, bars2)):
-        ax.text(bar1.get_width() + pos_errs[i] + 0.02, bar1.get_y() + bar1.get_height()/2,
-                f'{pos_means[i]:.3f}', ha='left', va='center', fontsize=8)
-        ax.text(bar2.get_width() + neg_errs[i] + 0.02, bar2.get_y() + bar2.get_height()/2,
-                f'{neg_means[i]:.3f}', ha='left', va='center', fontsize=8)
-    
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(metric_names)
-    ax.set_xlabel('Score')
-    ax.set_title(title)
-    ax.legend()
-    ax.grid(True, alpha=0.3, axis='x')
-    ax.set_xlim(0, 1.15)
-    
-    plt.tight_layout()
-    return fig
-
 
 def create_metrics_table(y_test, y_pred, y_prob, class_info):
     """Create comprehensive metrics table with confidence intervals"""
@@ -331,83 +208,158 @@ def create_metrics_table(y_test, y_pred, y_prob, class_info):
     
     return df
 
-
 def evaluate_and_plot(model, X_test, y_test, le, save_dir, prefix, 
-               model_name="Model", raw_model=None):
-    """Main evaluation function
-    Parameters:
-    - model: trained model (e.g., RandomForest, LogisticRegression, XGBoost).
-    - X_test: DataFrame, test features.
-    - y_test: Series, test labels.
-    - le: LabelEncoder, fitted label encoder for the labels.
-    - save_dir: str, directory to save results and figures.
-    - prefix: str, prefix for saved files.
-    - model_name: str, name of the model for display purposes.
-    - raw_model: optional, raw model for calibration plots if applicable.
-    
-    Returns:
-    - Dictionary with evaluation metrics and class info.
+                      model_name="Model", raw_model=None):
     """
-    
+    Full evaluation pipeline:
+    - Predictions
+    - Bootstrap CIs
+    - Metrics table
+    - CSV outputs
+    - 2x2 grid figure (ROC, PR, metrics, confusion matrix)
+    - Calibration plot (separate)
+    """
     os.makedirs(f"{save_dir}/figures", exist_ok=True)
     
     class_info = get_class_info(le)
+    pos_label = class_info['pos_label']
+    neg_label = class_info['neg_label']
     
-    # Get predictions
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)
     y_prob_raw = raw_model.predict_proba(X_test) if raw_model else None
     
-    # Classification report
     y_test_orig = le.inverse_transform(y_test)
     y_pred_orig = le.inverse_transform(y_pred)
     report = classification_report(y_test_orig, y_pred_orig, output_dict=True)
     pd.DataFrame(report).T.to_csv(f"{save_dir}/{prefix}_report.csv")
     
-    # Calculate metrics with CIs
-    pos_label = class_info['pos_label']
-    neg_label = class_info['neg_label']
-    
-    def auc_func(y_true, y_prob):
-        fpr, tpr, _ = roc_curve(y_true, y_prob, pos_label=pos_label)
-        return auc(fpr, tpr)
-    
-    def ap_func_pos(y_true, y_prob):
-        return average_precision_score(y_true, y_prob, pos_label=pos_label)
-    
-    def ap_func_neg(y_true, y_prob):
-        return average_precision_score(y_true, y_prob, pos_label=neg_label)
+    def auc_func(y_true, y_prob): return auc(*roc_curve(y_true, y_prob, pos_label=pos_label)[:2])
+    def ap_func_pos(y_true, y_prob): return average_precision_score(y_true, y_prob, pos_label=pos_label)
+    def ap_func_neg(y_true, y_prob): return average_precision_score(y_true, y_prob, pos_label=neg_label)
     
     auc_ci = bootstrap_ci(y_test, None, y_prob[:, pos_label], auc_func)
     ap_ci_pos = bootstrap_ci(y_test, None, y_prob[:, pos_label], ap_func_pos)
     ap_ci_neg = bootstrap_ci(y_test, None, y_prob[:, neg_label], ap_func_neg)
-
-    metrics_table = create_metrics_table(y_test, y_pred, y_prob, class_info)
     
-    # Save the table
+    metrics_table = create_metrics_table(y_test, y_pred, y_prob, class_info)
     metrics_table.to_csv(f"{save_dir}/{prefix}_detailed_metrics.csv", index=False)
     
-    # Create plots
-    fig1 = plot_confusion_matrix(y_test, y_pred, class_info, f"{model_name} Confusion Matrix")
-    fig2 = plot_roc_pr(y_test, y_prob, class_info, auc_ci, ap_ci_pos, ap_ci_neg, f"{model_name} Curves")
-    fig3 = plot_metrics_bar(y_test, y_pred, class_info, f"{model_name} Classification Metrics")
-    fig4 = plot_calibration(y_test, y_prob, y_prob_raw, class_info, f"{model_name} Calibration")
+    fig, axes = plt.subplots(2, 2, figsize=(18, 14))
+    plt.subplots_adjust(hspace=0.7, wspace=0.7)
+
+    fontsize_labels = 16   
+    fontsize_ticks = 14    
+    fontsize_legend = 14   
+    fontsize_title = 18    
     
-    # Save plots
-    plots = [(fig1, f"{prefix}_confusion"), (fig2, f"{prefix}_curves"), 
-             (fig3, f"{prefix}_metrics"), (fig4, f"{prefix}_calibration")]
+    fpr, tpr, _ = roc_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
+    axes[0,0].plot(fpr, tpr, 'r-', linewidth=2,
+                   label=f"{class_info['pos_name']} - AUC = {auc_ci['mean']:.3f} "
+                         f"(95% CI: {auc_ci['ci_low']:.3f}–{auc_ci['ci_high']:.3f})")
+    axes[0,0].plot([0,1],[0,1],'k--', alpha=0.5)
+    axes[0,0].set_xlabel("False Positive Rate", fontsize=fontsize_labels)
+    axes[0,0].set_ylabel("True Positive Rate", fontsize=fontsize_labels)
+    axes[0,0].tick_params(axis='both', which='major', labelsize=fontsize_ticks)
+    axes[0,0].set_title("A. ROC Curve", fontsize=fontsize_title, fontweight='bold')
+    axes[0,0].legend(fontsize=fontsize_legend)
+    axes[0,0].grid(True, alpha=0.3)
     
-    for fig, name in plots:
-        fig.savefig(f"{save_dir}/figures/{name}.png", dpi=1200, bbox_inches='tight')
-        fig.savefig(f"{save_dir}/figures/{name}.pdf", bbox_inches='tight')
-        # plt.show()
+
+    prec, rec, _ = precision_recall_curve(y_test, y_prob[:, pos_label], pos_label=pos_label)
+    prec_neg, rec_neg, _ = precision_recall_curve(y_test, y_prob[:, neg_label], pos_label=neg_label)
+    axes[0,1].plot(rec, prec, 'b-', linewidth=2,
+                   label=f"{class_info['pos_name']} - AUPRC = {ap_ci_pos['mean']:.3f} "
+                         f"(95% CI: {ap_ci_pos['ci_low']:.3f}–{ap_ci_pos['ci_high']:.3f})")
+    axes[0,1].plot(rec_neg, prec_neg, 'g--', linewidth=2,
+                   label=f"{class_info['neg_name']} - AUPRC = {ap_ci_neg['mean']:.3f} "
+                         f"(95% CI: {ap_ci_neg['ci_low']:.3f}–{ap_ci_neg['ci_high']:.3f})")
+    axes[0,1].set_xlabel("Recall", fontsize=fontsize_labels)
+    axes[0,1].set_ylabel("Precision", fontsize=fontsize_labels)
+    axes[0,1].set_title("B. Precision-Recall Curve", fontsize=fontsize_title, fontweight='bold')
+    axes[0,1].tick_params(axis='both', which='major', labelsize=fontsize_ticks)
+    axes[0,1].legend(fontsize=fontsize_legend)
+    axes[0,1].grid(True, alpha=0.3)
     
-    print(f"Saved plots to {save_dir}/figures/")
+
+    metrics = {}
+    for label, name in [(pos_label, class_info['pos_name']), (neg_label, class_info['neg_name'])]:
+        metrics[name] = {
+            'Precision': bootstrap_ci(y_test, y_pred, None, lambda yt, yp: precision_score(yt, yp, pos_label=label, zero_division=0)),
+            'Recall': bootstrap_ci(y_test, y_pred, None, lambda yt, yp: recall_score(yt, yp, pos_label=label, zero_division=0)),
+            'F1-Score': bootstrap_ci(y_test, y_pred, None, lambda yt, yp: f1_score(yt, yp, pos_label=label, zero_division=0))
+        }
+    metric_names = ['Precision', 'Recall', 'F1-Score']
+    class_names = list(metrics.keys())
+    pos_means = [metrics[class_names[0]][m]['mean'] for m in metric_names]
+    neg_means = [metrics[class_names[1]][m]['mean'] for m in metric_names]
+    pos_errs = [(metrics[class_names[0]][m]['ci_high'] - metrics[class_names[0]][m]['ci_low'])/2 for m in metric_names]
+    neg_errs = [(metrics[class_names[1]][m]['ci_high'] - metrics[class_names[1]][m]['ci_low'])/2 for m in metric_names]
     
+    y_pos = np.arange(len(metric_names))
+    width = 0.35
+    axes[1,0].barh(y_pos - width/2, pos_means, width, xerr=pos_errs, label=class_names[0], color='#E31A1C', alpha=0.8, capsize=3, hatch='///')
+    axes[1,0].barh(y_pos + width/2, neg_means, width, xerr=neg_errs, label=class_names[1], color='#1F78B4', alpha=0.8, capsize=3, hatch='...')
+    
+    for i in range(len(metric_names)):
+        axes[1,0].text(pos_means[i]+pos_errs[i]+0.02, y_pos[i]-width/2, f'{pos_means[i]:.3f}', va='center', fontsize=10)
+        axes[1,0].text(neg_means[i]+neg_errs[i]+0.02, y_pos[i]+width/2, f'{neg_means[i]:.3f}', va='center', fontsize=10)
+    
+    axes[1,0].set_yticks(y_pos)
+    axes[1,0].set_yticklabels(metric_names)
+    axes[1,0].set_xlabel("Score", fontsize=fontsize_labels)
+    axes[1,0].set_title("C. Classification Metrics", fontsize=fontsize_title, fontweight='bold')
+    axes[1,0].tick_params(axis='both', which='major', labelsize=fontsize_ticks)
+    axes[1,0].legend(fontsize=fontsize_legend)
+    axes[1,0].grid(True, alpha=0.3, axis='x')
+    axes[1,0].set_xlim(0, 1.15)
+    
+
+    labels = [neg_label, pos_label]
+    names = [class_info['neg_name'], class_info['pos_name']]
+    cm = confusion_matrix(y_test, y_pred, labels=labels)
+    cm_pct = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100
+    sns.heatmap(cm, annot=False, cmap='Blues', xticklabels=names, yticklabels=names, ax=axes[1,1])
+    
+    for i in range(2):
+        for j in range(2):
+            color = 'white' if cm[i,j] > cm.max()/2 else 'black'
+            axes[1,1].text(j+0.5, i+0.5, f'{cm[i,j]:,}\n({cm_pct[i,j]:.1f}%)', ha='center', va='center', color=color, fontweight='bold')
+    
+    axes[1,1].set_title("D. Confusion Matrix", fontsize=fontsize_title, fontweight='bold')
+    axes[1,1].set_xlabel("Predicted Labels", fontsize=fontsize_labels)
+    axes[1,1].set_ylabel("True Labels", fontsize=fontsize_labels)
+    axes[1,1].tick_params(axis='both', which='major', labelsize=fontsize_ticks)
+    
+    tn, fp, fn, tp = cm.ravel()
+    acc = (tp + tn)/cm.sum()
+    sens = tp/(tp+fn) if (tp+fn)>0 else 0
+    spec = tn/(tn+fp) if (tn+fp)>0 else 0
+    axes[1,1].text(0.5, -0.18, f'Accuracy: {acc:.3f} | Sensitivity: {sens:.3f} | Specificity: {spec:.3f}', 
+                    transform=axes[1,1].transAxes, ha='center', style='italic', fontsize=12)
+    
+    fig.suptitle(f"{model_name} Evaluation", fontsize=20, fontweight='bold')
+    plt.tight_layout(rect=[0,0,1,0.96])
+    
+
+    fig.savefig(f"{save_dir}/figures/{prefix}_2x2_grid.png", dpi=1200, bbox_inches='tight')
+    fig.savefig(f"{save_dir}/figures/{prefix}_2x2_grid.pdf", bbox_inches='tight')
+    plt.close(fig)
+    
+
+    fig_cal = plot_calibration(y_test, y_prob, y_prob_raw, class_info)
+    fig_cal.savefig(f"{save_dir}/figures/{prefix}_calibration.png", dpi=1200, bbox_inches='tight')
+    fig_cal.savefig(f"{save_dir}/figures/{prefix}_calibration.pdf", bbox_inches='tight')
+    plt.close(fig_cal)
+    
+
     return {
-        'auc': auc_ci, 
-        'auprc_pos': ap_ci_pos, 
-        'auprc_neg': ap_ci_neg, 
-        'class_info': class_info,
-        'report': report
+        'y_pred': y_pred,
+        'y_prob': y_prob,
+        'auc': auc_ci,
+        'auprc_pos': ap_ci_pos,
+        'auprc_neg': ap_ci_neg,
+        'metrics_table': metrics_table,
+        'fig_grid': fig,
+        'fig_calibration': fig_cal
     }
