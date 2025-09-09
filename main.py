@@ -1,5 +1,3 @@
-# Script written on 2025-06-13
-
 from scripts.load_dataset import load_dataset
 from scripts.split_and_preprocess import stratified_split, preprocess
 from scripts.train_baseline_lr_model import train_logistic_regression
