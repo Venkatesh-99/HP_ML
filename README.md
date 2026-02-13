@@ -14,11 +14,11 @@ The main script, `main.py`, orchestrates the following steps:
 2. **Data Cleaning**: (Optional, placeholder for future cleaning steps).
 3. **Train/Test Split**: Stratified splitting to maintain class balance.
 4. **Preprocessing**: Encodes categorical features and labels.
-5. **Baseline Model**: Trains and evaluates a logistic regression model.
-6. **Feature Selection**: Selects important features using SHAP and Bayesian optimization.
-7. **XGBoost Model**: Trains, calibrates, evaluates, and explains an XGBoost model.
-8. **Random Forest Model**: Trains, calibrates, evaluates, and explains a Random Forest model.
-9. **Model Explanation**: Uses SHAP to interpret modela.
+5. **Feature Selection**: Selects important features using SHAP and Bayesian optimization.
+6. **Baseline Model**: Trains and evaluates a logistic regression model on the reduced feature set.
+7. **XGBoost Model**: Trains, calibrates, evaluates, and explains an XGBoost model on the reduced feature set.
+8. **Random Forest Model**: Trains, calibrates, evaluates, and explains a Random Forest model on the reduced feature set.
+9. **Model Explanation**: Uses SHAP to interpret models.
 
 ## Scripts Directory
 
@@ -26,8 +26,8 @@ Each script in the `scripts/` folder is responsible for a specific part of the w
 
 - `load_dataset.py`: Loads the dataset from an Excel file.
 - `split_and_preprocess.py`: Splits the data and preprocesses features/labels.
-- `train_baseline_lr_model.py`: Trains a baseline logistic regression model.
 - `feature_selection.py`: Performs feature selection using SHAP and Bayesian optimization.
+- `train_baseline_lr_model.py`: Trains a baseline logistic regression model on selected features.
 - `train_xgb_with_bayesopt.py`: Trains an XGBoost model with Bayesian optimization.
 - `calibrate_model.py`: Calibrates classifiers for improved probability estimates.
 - `train_rf_with_bayesopt.py`: Trains a Random Forest model with Bayesian optimization.
