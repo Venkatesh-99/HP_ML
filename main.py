@@ -37,26 +37,26 @@ def main(dataset_path):
     X_train_encoded, y_train_encoded, X_test_encoded, y_test_encoded, label_encoder, _ = preprocess(X_train, y_train, X_test, y_test)
     print("Training and testing sets preprocessed successfully.")
 
-    # Train the baseline logistic regression model
-    lr_model = train_logistic_regression(X_train_encoded, y_train_encoded)
+    # Create a StratifiedShuffleSplit object for cross-validation
+    cv_splitter = StratifiedShuffleSplit(n_splits=10, random_state=26)
+
+    # Feature selection before model training
+    X_train_reduced, X_test_reduced, categorical_indices, selected_features =  shap_bayes_feature_selection(X_train_encoded, y_train_encoded, X_test_encoded, cv_splitter) 
+    print("Feature selection completed successfully. Reduced features:", len(selected_features))
+
+    # Train the baseline logistic regression model after feature selection
+    lr_model = train_logistic_regression(X_train_reduced, y_train_encoded)
     print("Baseline logistic regression model trained successfully.")
 
     # Evaluate the baseline model
-    evaluate_and_plot(lr_model, X_test_encoded, y_test_encoded, label_encoder, "./results/LR", "LR",
+    evaluate_and_plot(lr_model, X_test_reduced, y_test_encoded, label_encoder, "./results/LR", "LR",
                       model_name="Logistic Regression", raw_model=None)
     print("Baseline logistic regression model evaluated successfully.")
 
     # Explain the baseline model using SHAP
-    explain_model_with_shap_plots(lr_model, X_train_encoded, X_test_encoded, "./results/LR",
-                                  classifier_step_name="logisticregression", sample_idx=2, class_index=None)
+    explain_model_with_shap_plots(lr_model, X_train_reduced, X_test_reduced, "./results/LR",
+                                  classifier_step_name="logisticregression", sample_idx=2)
     print("SHAP summary plot for baseline logistic regression model generated successfully.")
-
-    # Create a StratifiedShuffleSplit object for cross-validation
-    cv_splitter = StratifiedShuffleSplit(n_splits=10, random_state=26)
-
-    # Feature selection for black box models
-    X_train_reduced, X_test_reduced, categorical_indices, selected_features =  shap_bayes_feature_selection(X_train_encoded, y_train_encoded, X_test_encoded, cv_splitter) 
-    print("Feature selection completed successfully. Reduced features:", len(selected_features))
     
     print("\n" + "="*60)
     print("TRAINING BLACK BOX MODELS WITH BAYESIAN OPTIMIZATION")
@@ -87,7 +87,7 @@ def main(dataset_path):
     
     # Explain the calibrated XGBoost model using SHAP
     explain_model_with_shap_plots(calibrated_xgb_model, X_train_reduced, X_test_reduced, "./results/XGB", classifier_step_name="classifier",
-                                  sample_idx=2, class_index=None)
+                                  sample_idx=2)
     
     print("SHAP summary plot for calibrated XGBoost model generated successfully.")
 
@@ -102,7 +102,7 @@ def main(dataset_path):
 
     # Explain the calibrated Random Forest model using SHAP
     explain_model_with_shap_plots(calibrated_rf_model, X_train_reduced, X_test_reduced, "./results/RF", classifier_step_name="classifier", 
-                                  sample_idx=2, class_index=0)
+                                  sample_idx=2)
     print("SHAP summary plot for calibrated Random Forest model generated successfully.")
 
     print("\n" + "="*60)
